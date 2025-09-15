@@ -1,0 +1,3 @@
+class Config:
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:123456@117.72.65.17/flask'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
