@@ -9,16 +9,27 @@ def add_user():
     data = request.get_json()
     username = data.get('username')
     email = data.get('email')
+    password = data.get('password')
+    gender = data.get('gender')
+    age = data.get('age')
+    avatar = data.get('avatar')
+    
+    if not username or not email or not password:  # 添加密码检查
+        return '缺少用户名、邮箱或密码', 400
 
-    if not username or not email:
-        return '缺少用户名或邮箱地址', 400
-
-    # 检查 email 是否已存在
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
         return '邮箱已存在，无法添加用户', 400
 
-    new_user = User(username=username, email=email)
+    # 修改这里，传递所有字段
+    new_user = User(
+        username=username,
+        email=email,
+        password=password,
+        gender=gender,
+        age=age,
+        avatar=avatar
+    )
     db.session.add(new_user)
     try:
         db.session.commit()
