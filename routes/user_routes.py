@@ -86,3 +86,25 @@ def update_user(user_id):
 def get_users():
     users = User.query.all()
     return '<br>'.join([f'{user.username} ({user.email})' for user in users])
+
+@user_bp.route('/login', methods=['POST'])
+def user_login():
+    """用户登录校验接口"""
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    # 校验必填参数
+    if not email or not password:
+        return '缺少必要参数（邮箱/密码）', 400
+
+    # 查询用户是否存在
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return '用户不存在', 404
+
+    # 校验密码（注意：生产环境应使用哈希校验，此处为简化示例）
+    if user.password != password:
+        return '密码错误', 401
+
+    return '登录成功', 200

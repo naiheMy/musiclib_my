@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>用户注册</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: '微软雅黑', sans-serif;
+        }
+        .register-container {
+            background: rgba(255,255,255,0.95);
+            padding: 2.5rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            width: 350px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #666;
+        }
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            width: 100%;
+            padding: 0.8rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #536cd6;
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <!-- 新增axios CDN引入 -->
+    <script src="https://unpkg.com/axios@1.5.1/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="register-container">
+        <h1>用户注册</h1>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" placeholder="请输入用户名" required>
+            </div>
+            <div class="form-group">
+                <label for="email">注册邮箱</label>
+                <input type="email" id="email" placeholder="请输入邮箱" required>
+            </div>
+            <div class="form-group">
+                <label for="password">登录密码</label>
+                <input type="password" id="password" placeholder="请输入密码" required>
+            </div>
+            <div class="form-group">
+                <label for="gender">性别（0-男/1-女）</label>
+                <input type="number" id="gender" min="0" max="1">
+            </div>
+            <div class="form-group">
+                <label for="age">年龄</label>
+                <input type="number" id="age" min="0">
+            </div>
+            <div class="form-group">
+                <label for="avatar">头像链接</label>
+                <input type="text" id="avatar" placeholder="可选">
+            </div>
+            <button type="submit">立即注册</button>
+        </form>
+        <!-- 修改登录链接 -->
+        <div class="login-link" style="text-align: center;margin-top: 1.5rem;">
+            已有账号？<a id="loginLink">立即登录</a>
+        </div>
+    </div>
+
+    <script>
+        async function loadConfig() {
+            try {
+                const response = await fetch('/static/config.json');
+                if (!response.ok) throw new Error('配置文件加载失败');
+                return await response.json();
+            } catch (error) {
+                alert(`配置加载错误: ${error.message}`);
+                console.error(error);
+            }
+        }
+
+        // 初始化配置并绑定事件（修改axios部分）
+        (async () => {
+            const config = await loadConfig();
+            if (!config) return;
+
+            const baseUrl = config.baseUrl;
+            document.getElementById('loginLink').href = `${baseUrl}/login`;
+
+            // 注册表单提交事件（替换为axios）
+            document.getElementById('registerForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const data = {
+                    username: document.getElementById('username').value,
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value,
+                    gender: document.getElementById('gender').value || null,
+                    age: document.getElementById('age').value || null,
+                    avatar: document.getElementById('avatar').value || ''
+                };
+
+                try {
+                    // 使用axios发送POST请求
+                    const response = await axios.post(`${baseUrl}/user/add`, data);
+                    alert('注册成功！请登录');
+                    window.location.href = `${baseUrl}/login`;
+                } catch (error) {
+                    // 处理axios错误（包括网络错误和HTTP错误状态码）
+                    const errorMsg = error.response?.data || error.message;
+                    alert(`注册失败: ${errorMsg}`);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
