@@ -1,15 +1,10 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from sqlite3 import IntegrityError
 from models import db, User
+from utils.response_util import make_response  # 修改导入路径
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
-def make_response(code=200, data=None, message=''):
-    return jsonify({
-        'code': code,
-        'data': data,
-        'message': message
-    })
 
 @user_bp.route('/add', methods=['POST'])
 def add_user():
@@ -17,23 +12,39 @@ def add_user():
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
-    gender = data.get('gender')
+    gender = data.get('gender', 0)  # 默认值0
     age = data.get('age')
-    avatar = data.get('avatar')
+    avatar = data.get('avatar', '')  # 默认值空字符串
     
     if not username or not email or not password:
         return make_response(400, None, '缺少用户名、邮箱或密码')
 
-    existing_user = User.query.filter_by(email=email).first()
+    # 验证age是否为有效数字
+    if age is not None and age != '':
+        try:
+            age = int(age)
+        except ValueError:
+            return make_response(400, None, '年龄必须是有效数字')
+    else:
+        age = None  # 或者设置为默认值如0
+
+    # 同时检查用户名和邮箱是否已存在
+    existing_user = User.query.filter(
+        (User.username == username) | (User.email == email)
+    ).first()
+    
     if existing_user:
-        return make_response(400, None, '邮箱已存在，无法添加用户')
+        if existing_user.username == username:
+            return make_response(400, None, '用户名已存在')
+        else:
+            return make_response(400, None, '邮箱已存在')
 
     new_user = User(
         username=username,
         email=email,
         password=password,
         gender=gender,
-        age=age,
+        age=age,  # 使用处理后的age值
         avatar=avatar
     )
     db.session.add(new_user)
@@ -41,12 +52,12 @@ def add_user():
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-        return make_response(400, None, '插入失败，可能是用户名或邮箱重复')
+        return make_response(400, None, '插入失败，用户名或邮箱重复')
     except Exception as e:
         db.session.rollback()
         return make_response(500, None, f'数据库错误: {str(e)}')
 
-    return make_response(200, {'id': new_user.id}, '用户添加成功')
+    return make_response(200, {'id': new_user.id}, '用户注册成功')
 
 @user_bp.route('/login', methods=['POST'])
 def user_login():
