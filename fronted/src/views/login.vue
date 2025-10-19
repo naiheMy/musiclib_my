@@ -25,7 +25,17 @@
               class="input-field"
               placeholder="Email"
               autocomplete="off"
+              @input="handleEmailInput"
             />
+            <div class="email-suggestions" v-if="emailSuggestions.length">
+              <div 
+                v-for="suggestion in emailSuggestions" 
+                :key="suggestion"
+                @click="selectEmailSuggestion(suggestion)"
+              >
+                {{ suggestion }}
+              </div>
+            </div>
           </div>
           <div class="field">
             <svg
@@ -40,7 +50,20 @@
                 d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"
               ></path>
             </svg>
-            <input v-model="password" type="password" class="input-field" placeholder="Password" />
+            <input
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              class="input-field"
+              placeholder="Password"
+            />
+            <span class="password-toggle" @click="togglePasswordVisibility">
+              <svg v-if="showPassword" viewBox="0 0 24 24" width="16" height="16">
+                <path fill="currentColor" d="M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9M12,4.5C17,4.5 21.27,7.61 23,12C21.27,16.39 17,19.5 12,19.5C7,19.5 2.73,16.39 1,12C2.73,7.61 7,4.5 12,4.5M3.18,12C4.83,15.36 8.24,17.5 12,17.5C15.76,17.5 19.17,15.36 20.82,12C19.17,8.64 15.76,6.5 12,6.5C8.24,6.5 4.83,8.64 3.18,12Z" />
+              </svg>
+              <svg v-else viewBox="0 0 24 24" width="16" height="16">
+                <path fill="currentColor" d="M11.83,9L15,12.16C15,12.11 15,12.05 15,12A3,3 0 0,0 12,9C11.94,9 11.89,9 11.83,9M7.53,9.8L9.08,11.35C9.03,11.56 9,11.77 9,12A3,3 0 0,0 12,15C12.22,15 12.44,14.97 12.65,14.92L14.2,16.47C13.53,16.8 12.79,17 12,17A5,5 0 0,1 7,12C7,11.21 7.2,10.47 7.53,9.8M2,4.27L4.28,6.55L4.73,7C3.08,8.3 1.78,10 1,12C2.73,16.39 7,19.5 12,19.5C13.55,19.5 15.03,19.2 16.38,18.66L16.81,19.08L19.73,22L21,20.73L3.27,3L2,4.27Z" />
+              </svg>
+            </span>
           </div>
           <div class="btn">
             <button type="button" class="button1" @click="login()">
@@ -72,9 +95,24 @@ export default {
       email: "",
       password: "",
       dialogVisible: false,
+      emailSuggestions: [],
+      showPassword: false  // 添加showPassword状态
     };
   },
   methods: {
+    handleEmailInput() {
+      if (this.email.includes('@')) {
+        this.emailSuggestions = [];
+        return;
+      }
+      
+      const domains = ['qq.com', '163.com', 'gmail.com', 'outlook.com', 'yahoo.com'];
+      this.emailSuggestions = domains.map(domain => `${this.email}@${domain}`);
+    },
+    selectEmailSuggestion(suggestion) {
+      this.email = suggestion;
+      this.emailSuggestions = [];
+    },
     showForgotPassword() {
       this.dialogVisible = true;
     },
@@ -106,6 +144,9 @@ export default {
     },
     goRegister() {
       this.$router.push('/register');
+    },
+    togglePasswordVisibility() {  // 添加切换密码可见性的方法
+      this.showPassword = !this.showPassword;
     }
   },
 };
@@ -175,6 +216,20 @@ export default {
   color: white;
   background-color: #171717;
   box-shadow: inset 2px 5px 10px rgb(5, 5, 5);
+  position: relative;  /* 添加相对定位 */
+}
+
+.email-suggestions {
+  position: absolute;
+  top: calc(100% + 5px);  /* 调整距离 */
+  left: 0;
+  width: calc(100% - 1.2em);  /* 减去左右padding */
+  margin: 0 0.6em;  /* 与输入框对齐 */
+  background-color: #252525;
+  border-radius: 0 0 5px 5px;
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 .input-icon {
@@ -280,5 +335,37 @@ export default {
   width: 100%;
   z-index: 1;
   pointer-events: none;
+}
+.email-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: #252525;
+  border-radius: 0 0 5px 5px;
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.email-suggestions div {
+  padding: 8px 16px;
+  cursor: pointer;
+  color: #d3d3d3;
+}
+
+.email-suggestions div:hover {
+  background-color: #171717;
+  color: white;
+}
+.password-toggle {
+  position: absolute;
+  right: 15px;
+  cursor: pointer;
+  color: #d3d3d3;
+}
+
+.password-toggle:hover {
+  color: white;
 }
 </style>
