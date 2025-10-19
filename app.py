@@ -14,19 +14,6 @@ def create_app():
     
     # 注册蓝图
     app.register_blueprint(user_bp)
-
-    # 添加页面路由
-    @app.route('/login')
-    def show_login():
-        return render_template('login.html')
-
-    @app.route('/register')
-    def show_register():
-        return render_template('register.html')
-
-    @app.route('/home')
-    def show_home():
-        return render_template('home.html')
     
     return app
 
